@@ -4,6 +4,8 @@ from contour import detect_contour
 from placer_scipy import place_one_object, place_many_objects
 import utils
 
+DEBUG_OUTPUT = False
+
 # main function used by this module
 def check_image(path_to_image_on_local_computer):
     # load dataset prepared by tools from images dir
@@ -17,10 +19,16 @@ def check_image(path_to_image_on_local_computer):
 
     # some failure with contour detection
     if (con == None):
-        return "Not found"
+        if DEBUG_OUTPUT:
+            return "Not found"
+        else:
+            return False        
 
     if not con.is_convex():
-        return "Not convex"
+        if DEBUG_OUTPUT:
+            return "Not convex"
+        else:
+            return False        
 
     # detect objects
     objects = detect_objects(image_to_check, objects_dataset)
@@ -37,12 +45,18 @@ def check_image(path_to_image_on_local_computer):
         if obj_width < obj_height:
             obj_height, obj_width = obj_width, obj_height
         if obj_area > contour_area or obj_width > contour_radius * 2:
-            return "Area of object is too big"
+            if DEBUG_OUTPUT:
+                return "Area of object is too big"
+            else:
+                return False      
 
     #check if each object can be placed
     for obj in objects:
         if not place_one_object(obj.hull, con.hull):
-            return "Cannot place one of the objects"
+            if DEBUG_OUTPUT:
+                return "Cannot place one of the objects"
+            else:
+                return False            
 
     if len(objects) <= 1:
         return True
