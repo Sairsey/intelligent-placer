@@ -62,7 +62,7 @@ def check_image(path_to_image_on_local_computer):
         return True
 
     # hard part - check all objects
-    return place_many_objects([o.hull for o in objects], con.hull)
+    return False
 
 
 if __name__ == "__main__":
