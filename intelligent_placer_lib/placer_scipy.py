@@ -25,9 +25,6 @@ def one_object_optimize_function(data, object, contour):
 
     intersect = polygon1.intersection(polygon2)
     res += max((polygon1 - polygon2).area, 0)
-
-    # Third lets try to move it to the upper-left corner
-    res += posx + posy
     return max(res, 0)
 
 def many_object_optimize_function(data, objects, contour):
@@ -100,22 +97,31 @@ def place_many_objects(objs, con):
     res = res.x
     if (DEBUG_PLACER):
         print(res)
+        x1, y1, w1, h1 = cv2.boundingRect(con)
+        w1 += x1
+        h1 += y1
+        
         for i in range(len(objs)):
             obj = objs[i]
             new_contour = utils.rotate_contour(obj, res[3 * i + 2]).astype(np.int32)
             new_contour += [int(res[3 * i + 0]), int(res[3 * i + 1])]
 
             # Create image filled with zeros the same size of original image
-            x1, y1, w1, h1 = cv2.boundingRect(con)
             x2, y2, w2, h2 = cv2.boundingRect(new_contour)
-            w1 += x1
-            h1 += y1
             w2 += x2
             h2 += y2
-            blank = np.zeros((max(h1, h2), max(w1, w2), 3))
+            
+            h1 = max(h1, h2)
+            w1 = max(w1, w2)
+            
+        blank = np.zeros((h1, w1, 3))
+        blank = cv2.fillPoly(blank, [con], (255, 0, 0))
 
-            blank = cv2.fillPoly(blank, [con], (255, 0, 0))
+        for i in range(len(objs)):
+            obj = objs[i]
+            new_contour = utils.rotate_contour(obj, res[3 * i + 2]).astype(np.int32)
+            new_contour += [int(res[3 * i + 0]), int(res[3 * i + 1])]
             blank = cv2.fillPoly(blank, [new_contour], (0, 255, 0))
-            cv2.imshow("PLACEMENT", blank)
-            cv2.waitKey(0)
+        cv2.imshow("PLACEMENT", blank)
+        cv2.waitKey(0)
     return ans
