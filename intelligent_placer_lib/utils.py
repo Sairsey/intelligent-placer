@@ -90,3 +90,30 @@ def contours_distance(contour1,contour2):
             vec = (point1[0] - point2[0], point1[1] - point2[1])
             cur_dist = min(cur_dist, np.sqrt(vec[0] ** 2 + vec[1] ** 2))
     return cur_dist
+
+def generate_colors_image(dominant_colors):
+    dominant_colors_image = np.zeros((128, 128 * len(dominant_colors), 3))
+    for i in range(len(dominant_colors)):
+        color = (dominant_colors[i][1][2] / 255, dominant_colors[i][1][1] / 255, dominant_colors[i][1][0] / 255)
+        dominant_colors_image = cv2.rectangle(dominant_colors_image, (128 * i, 0), (128 * (i + 1), 128), color, -1)
+    return dominant_colors_image
+
+def rgb_to_hsv(r, g, b):
+    r, g, b = r/255.0, g/255.0, b/255.0
+    mx = max(r, g, b)
+    mn = min(r, g, b)
+    df = mx-mn
+    if mx == mn:
+        h = 0
+    elif mx == r:
+        h = (60 * ((g-b)/df) + 360) % 360
+    elif mx == g:
+        h = (60 * ((b-r)/df) + 120) % 360
+    elif mx == b:
+        h = (60 * ((r-g)/df) + 240) % 360
+    if mx == 0:
+        s = 0
+    else:
+        s = (df/mx)*100
+    v = mx*100
+    return h, s, v

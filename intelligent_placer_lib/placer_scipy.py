@@ -54,14 +54,11 @@ def place_one_object(obj, con):
     # try to minimize
     res = minimize(one_object_optimize_function, (0.1, 0.1, 0.1) , args=(obj, con), options={'gtol': 1e-7})
     ans = res.success
-    if res.fun < 0:
+    if res.fun <= 1:
         ans = True
-
-    if (DEBUG_PLACER):
-        print(res)
     res = res.x
     if (DEBUG_PLACER):
-        print(res)
+        print(ans, res)
         new_contour = utils.rotate_contour(obj, res[2]).astype(np.int32)
         new_contour += [int(res[0]), int(res[1])]
 
@@ -90,13 +87,11 @@ def place_many_objects(objs, con):
     # try to minimize
     res = minimize(many_object_optimize_function, initial_guess, args=(objs, con), options={'gtol': 1e-7})
     ans = res.success
-    if res.fun < 0:
+    if res.fun <= 0:
         ans = True
-    if (DEBUG_PLACER):
-        print(res)
     res = res.x
     if (DEBUG_PLACER):
-        print(res)
+        print(ans, res)
         x1, y1, w1, h1 = cv2.boundingRect(con)
         w1 += x1
         h1 += y1
@@ -116,12 +111,22 @@ def place_many_objects(objs, con):
             
         blank = np.zeros((h1, w1, 3))
         blank = cv2.fillPoly(blank, [con], (255, 0, 0))
-
+        colors = [
+            [0, 0, 0.9],
+            [0, 1, 0],
+            [1, 1, 0],
+            [1, 0, 1],
+            [0, 1, 1],
+            [1, 1, 1],
+            [1, 0.5, 0],
+            [0, 0.5, 0.5],
+            [0.5, 0.5, 0.5],
+            [0.1, 0.5, 0.9]]
         for i in range(len(objs)):
             obj = objs[i]
             new_contour = utils.rotate_contour(obj, res[3 * i + 2]).astype(np.int32)
             new_contour += [int(res[3 * i + 0]), int(res[3 * i + 1])]
-            blank = cv2.fillPoly(blank, [new_contour], (0, 255, 0))
+            blank = cv2.fillPoly(blank, [new_contour], colors[i])
         cv2.imshow("PLACEMENT", blank)
         cv2.waitKey(0)
     return ans
