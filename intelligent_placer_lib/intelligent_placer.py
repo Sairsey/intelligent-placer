@@ -50,6 +50,8 @@ def check_image(path_to_image_on_local_computer):
             else:
                 return False      
 
+    for obj in objects:
+        obj.centerize()
     #check if each object can be placed
     for obj in objects:
         if not place_one_object(obj.hull, con.hull):

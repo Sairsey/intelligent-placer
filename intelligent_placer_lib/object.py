@@ -52,6 +52,10 @@ class object:
         clusters_weight = [x / total_sum for x in clusters_weight]
         self.dominant_colors = [(clusters_weight[index], [float(x[0]), float(x[1]), float(x[2])]) for index, x in enumerate(kmeans.cluster_centers_)]
         self.dominant_colors.sort(key = lambda x: -x[0])
+        #medium = np.median(self.hull, axis=0).astype(np.int)
+        #self.hull = self.hull - medium
+
+    def centerize(self):
         medium = np.median(self.hull, axis=0).astype(np.int)
         self.hull = self.hull - medium
 
@@ -85,8 +89,8 @@ class object:
                                 enumerate(kmeans.cluster_centers_)]
         new_object.dominant_colors.sort(key=lambda x: -x[0])
 
-        medium = np.median(new_object.hull, axis=0).astype(np.int)
-        new_object.hull = new_object.hull - medium
+        #medium = np.median(new_object.hull, axis=0).astype(np.int)
+        #new_object.hull = new_object.hull - medium
         return new_object
 
 # this function will load dataset
@@ -102,11 +106,12 @@ def detect_objects(image, objects_dataset):
     rezult = []
 
     # lets find contours on our image
-    img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    image_norm = utils.normalize_image(image)
+    img_gray = cv2.cvtColor(image_norm, cv2.COLOR_BGR2GRAY)
     img_gauss = cv2.GaussianBlur(img_gray, (5, 5), 0)
 
     #threshold image
-    res, img_threshold = cv2.threshold(img_gauss, 123, 255, cv2.THRESH_BINARY)
+    res, img_threshold = cv2.threshold(img_gauss, 230, 255, cv2.THRESH_BINARY)
 
     # find countours on binary thresholded image
     contours, hierarchy = cv2.findContours(image=img_threshold, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
@@ -115,7 +120,8 @@ def detect_objects(image, objects_dataset):
     convex_contours = []
     for i in range(len(contours)):
         if (cv2.contourArea(contours[i]) <= 0.5 * img_threshold.shape[0] * img_threshold.shape[1] and
-            cv2.contourArea(contours[i]) >= 0.002 * img_threshold.shape[0] * img_threshold.shape[1]):
+            cv2.contourArea(contours[i]) >= 0.002 * img_threshold.shape[0] * img_threshold.shape[1] and
+            hierarchy[0][hierarchy[0][i][3]][3] == -1):
             convex_contours.append(cv2.convexHull(contours[i]))
 
     # add each of them as a contour
@@ -151,9 +157,9 @@ def detect_objects(image, objects_dataset):
             cv2.imshow("Object", obj.image)
             cv2.waitKey(0)
 
-        if (index_min != 0):
-            rezult.append(obj)
-            new_contours.append(contour)
+        #if (index_min != 0):
+        rezult.append(obj)
+        new_contours.append(contour)
 
     if (DEBUG_OBJECTS):
         cv2.drawContours(image=image, contours=new_contours, contourIdx=-1, color=(0, 255, 0), thickness=2,
