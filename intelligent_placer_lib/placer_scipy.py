@@ -53,7 +53,7 @@ def many_object_optimize_function(data, objects, contour):
 def place_one_object(obj, con):
     # try to minimize
     res = minimize(one_object_optimize_function, (0.1, 0.1, 0.1) , args=(obj, con), options={'gtol': 1e-7})
-    ans = res.success
+    ans = False
     if res.fun <= 1:
         ans = True
     res = res.x
@@ -86,8 +86,8 @@ def place_many_objects(objs, con):
 
     # try to minimize
     res = minimize(many_object_optimize_function, initial_guess, args=(objs, con), options={'gtol': 1e-7})
-    ans = res.success
-    if res.fun <= 0:
+    ans = False
+    if res.fun <= 1:
         ans = True
     res = res.x
     if (DEBUG_PLACER):
