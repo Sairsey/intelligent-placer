@@ -75,7 +75,7 @@
 Ответ: True
 
 ![test 17](17.jpg "test 17")
-Ответ: False
+Ответ: True
 
 ![test 18](18.jpg "test 18")
 Ответ: True
