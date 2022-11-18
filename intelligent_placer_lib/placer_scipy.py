@@ -54,7 +54,7 @@ def place_one_object(obj, con):
     # try to minimize
     res = minimize(one_object_optimize_function, (0.1, 0.1, 0.1) , args=(obj, con), options={'gtol': 1e-7})
     ans = False
-    if res.fun <= 1:
+    if res.fun <= 1: # because if we intersect with only 1 pixel, it is not fatal
         ans = True
     res = res.x
     if (DEBUG_PLACER):
@@ -87,7 +87,7 @@ def place_many_objects(objs, con):
     # try to minimize
     res = minimize(many_object_optimize_function, initial_guess, args=(objs, con), options={'gtol': 1e-7})
     ans = False
-    if res.fun <= 1:
+    if res.fun <= 1: # because if we intersect with only 1 pixel, it is not fatal
         ans = True
     res = res.x
     if (DEBUG_PLACER):

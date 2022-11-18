@@ -77,7 +77,7 @@ def point_in_contour(x,y,poly):
     return inside
 
 def contours_distance(contour1,contour2):
-    cur_dist = 100000
+    cur_dist = float("inf")
     polygon = [(el2[0][0], el2[0][1]) for el2 in contour2]
     for el1 in contour1:
         point1 = (el1[0][0], el1[0][1])

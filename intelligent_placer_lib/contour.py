@@ -4,6 +4,9 @@ import cv2
 DEBUG_CONTOURS = False
 BG_INTENCITY = 120
 BORDER_INTENCITY = 100
+CANNY_THRESHOLD_1 = 100
+CANNY_THRESHOLD_2 = 200
+CONVEX_CHECK_EPS = 0.05
 
 # countour representation class
 class countour:
@@ -21,13 +24,13 @@ class countour:
     def is_convex(self):
         self.area = cv2.contourArea(self.points)
         convex_area = cv2.contourArea(self.hull)
-        return abs(self.area - convex_area) / max(self.area, convex_area) <= 0.05
+        return abs(self.area - convex_area) / max(self.area, convex_area) <= CONVEX_CHECK_EPS
 
 def detect_contour(cv2_image):
     #make canny
     img_gray = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2GRAY)
     img_gauss = cv2.GaussianBlur(img_gray, (5, 5), 0)
-    img_canny = cv2.Canny(img_gauss, 100, 200)
+    img_canny = cv2.Canny(img_gauss, CANNY_THRESHOLD_1, CANNY_THRESHOLD_2)
 
     # find countours on binary thresholded canny
     contours, hierarchy = cv2.findContours(image=img_canny, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE)

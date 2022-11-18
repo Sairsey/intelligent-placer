@@ -10,6 +10,10 @@ import utils
 
 DEBUG_OBJECTS = False
 CLUSTERS_AMOUNT = 3
+BIN_THRESHOLD = 230
+CONTOUR_AREA_MAX_PERCENT = 0.5
+CONTOUR_AREA_MIN_PERCENT = 0.002
+
 
 # object representation class
 class object:
@@ -111,7 +115,7 @@ def detect_objects(image, objects_dataset):
     img_gauss = cv2.GaussianBlur(img_gray, (5, 5), 0)
 
     #threshold image
-    res, img_threshold = cv2.threshold(img_gauss, 230, 255, cv2.THRESH_BINARY)
+    res, img_threshold = cv2.threshold(img_gauss, BIN_THRESHOLD, 255, cv2.THRESH_BINARY)
 
     # find countours on binary thresholded image
     contours, hierarchy = cv2.findContours(image=img_threshold, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
@@ -119,8 +123,8 @@ def detect_objects(image, objects_dataset):
     # collect convex_hulls of contours, and removing obviously incorrect data
     convex_contours = []
     for i in range(len(contours)):
-        if (cv2.contourArea(contours[i]) <= 0.5 * img_threshold.shape[0] * img_threshold.shape[1] and
-            cv2.contourArea(contours[i]) >= 0.002 * img_threshold.shape[0] * img_threshold.shape[1] and
+        if (cv2.contourArea(contours[i]) <= CONTOUR_AREA_MAX_PERCENT * img_threshold.shape[0] * img_threshold.shape[1] and
+            cv2.contourArea(contours[i]) >= CONTOUR_AREA_MIN_PERCENT * img_threshold.shape[0] * img_threshold.shape[1] and
             hierarchy[0][hierarchy[0][i][3]][3] == -1):
             convex_contours.append(cv2.convexHull(contours[i]))
 
