@@ -6,7 +6,7 @@ import json
 import os
 from sklearn.cluster import KMeans
 
-import utils
+import intelligent_placer_lib.utils as utils
 
 DEBUG_OBJECTS = False
 CLUSTERS_AMOUNT = 3
@@ -46,16 +46,16 @@ class object:
         new_img = cv2.cvtColor(img_copy, cv2.COLOR_BGR2RGB)
         new_img = new_img[mask!=0]
         # using k-means to cluster pixels
-        kmeans = KMeans(n_clusters=CLUSTERS_AMOUNT)
-        kmeans.fit(new_img)
-        clusters_weight = [0] * CLUSTERS_AMOUNT
-        total_sum = 0
-        for label in kmeans.labels_:
-            clusters_weight[label] += 1
-            total_sum += 1
-        clusters_weight = [x / total_sum for x in clusters_weight]
-        self.dominant_colors = [(clusters_weight[index], [float(x[0]), float(x[1]), float(x[2])]) for index, x in enumerate(kmeans.cluster_centers_)]
-        self.dominant_colors.sort(key = lambda x: -x[0])
+        #kmeans = KMeans(n_clusters=CLUSTERS_AMOUNT)
+        #kmeans.fit(new_img)
+        #clusters_weight = [0] * CLUSTERS_AMOUNT
+        #total_sum = 0
+        #for label in kmeans.labels_:
+        #    clusters_weight[label] += 1
+        #    total_sum += 1
+        #clusters_weight = [x / total_sum for x in clusters_weight]
+        #self.dominant_colors = [(clusters_weight[index], [float(x[0]), float(x[1]), float(x[2])]) for index, x in enumerate(kmeans.cluster_centers_)]
+        #self.dominant_colors.sort(key = lambda x: -x[0])
         #medium = np.median(self.hull, axis=0).astype(np.int)
         #self.hull = self.hull - medium
 
@@ -81,17 +81,17 @@ class object:
         new_img = cv2.cvtColor(img_copy, cv2.COLOR_BGR2RGB)
         new_img = new_img[mask != 0]
         # using k-means to cluster pixels
-        kmeans = KMeans(n_clusters=CLUSTERS_AMOUNT)
-        kmeans.fit(new_img)
-        clusters_weight = [0] * CLUSTERS_AMOUNT
-        total_sum = 0
-        for label in kmeans.labels_:
-            clusters_weight[label] += 1
-            total_sum += 1
-        clusters_weight = [x / total_sum for x in clusters_weight]
-        new_object.dominant_colors = [(clusters_weight[index], [float(x[0]), float(x[1]), float(x[2])]) for index, x in
-                                enumerate(kmeans.cluster_centers_)]
-        new_object.dominant_colors.sort(key=lambda x: -x[0])
+        #kmeans = KMeans(n_clusters=CLUSTERS_AMOUNT)
+        #kmeans.fit(new_img)
+        #clusters_weight = [0] * CLUSTERS_AMOUNT
+        #total_sum = 0
+        #for label in kmeans.labels_:
+        #    clusters_weight[label] += 1
+        #    total_sum += 1
+        #clusters_weight = [x / total_sum for x in clusters_weight]
+        #new_object.dominant_colors = [(clusters_weight[index], [float(x[0]), float(x[1]), float(x[2])]) for index, x in
+        #                        enumerate(kmeans.cluster_centers_)]
+        #new_object.dominant_colors.sort(key=lambda x: -x[0])
 
         #medium = np.median(new_object.hull, axis=0).astype(np.int)
         #new_object.hull = new_object.hull - medium
@@ -99,7 +99,7 @@ class object:
 
 # this function will load dataset
 def load_objects_dataset():
-    directory = "../images/"
+    directory = "images/"
     result = []
     for filename in os.listdir(directory):
         if filename.endswith(".json") and not filename.endswith("_convex.json"):
@@ -134,32 +134,32 @@ def detect_objects(image, objects_dataset):
 
     for contour in convex_contours:
         obj = object.from_contour_and_image(contour, image)
-        metrics = [0] * len(objects_dataset)
-        for data_index, data in enumerate(objects_dataset):
-            for color_index in range(CLUSTERS_AMOUNT):
+        #metrics = [0] * len(objects_dataset)
+        #for data_index, data in enumerate(objects_dataset):
+        #    for color_index in range(CLUSTERS_AMOUNT):
                 #metrics[data_index] += 1 * \
                 #    ((obj.dominant_colors[color_index][1][0] / 255 - data.dominant_colors[color_index][1][0] / 255) ** 2 + \
                 #    (obj.dominant_colors[color_index][1][1] / 255- data.dominant_colors[color_index][1][1] / 255) ** 2 + \
                 #    (obj.dominant_colors[color_index][1][2] / 255- data.dominant_colors[color_index][1][2] / 255) ** 2)
-                obj_hsv_color = [utils.rgb_to_hsv(col[1][0], col[1][1], col[1][2]) for col in obj.dominant_colors]
-                data_hsv_color = [utils.rgb_to_hsv(col[1][0], col[1][1], col[1][2]) for col in data.dominant_colors]
-                metrics[data_index] += 0.5 ** color_index * \
-                    ((obj_hsv_color[color_index][0] - data_hsv_color[color_index][0] ) ** 2 + \
-                    (obj_hsv_color[color_index][1] - data_hsv_color[color_index][1]) ** 2 + \
-                    (obj_hsv_color[color_index][2] - data_hsv_color[color_index][2]) ** 2)
+        #        obj_hsv_color = [utils.rgb_to_hsv(col[1][0], col[1][1], col[1][2]) for col in obj.dominant_colors]
+        #        data_hsv_color = [utils.rgb_to_hsv(col[1][0], col[1][1], col[1][2]) for col in data.dominant_colors]
+        #        metrics[data_index] += 0.5 ** color_index * \
+        #            ((obj_hsv_color[color_index][0] - data_hsv_color[color_index][0] ) ** 2 + \
+        #            (obj_hsv_color[color_index][1] - data_hsv_color[color_index][1]) ** 2 + \
+        #            (obj_hsv_color[color_index][2] - data_hsv_color[color_index][2]) ** 2)
 
-        index_min = min(range(len(metrics)), key=metrics.__getitem__)
-        obj.path = objects_dataset[index_min].path
-        if DEBUG_OBJECTS:
-            cv2.destroyAllWindows()
-            print(objects_dataset[index_min].path, index_min, metrics)
-            print(obj.dominant_colors)
-            print(objects_dataset[index_min].dominant_colors)
-            cv2.imshow("Object Colors", utils.generate_colors_image(obj.dominant_colors))
-            cv2.imshow("Predicted Colors", utils.generate_colors_image(objects_dataset[index_min].dominant_colors))
-            cv2.imshow("Prediceted Object", objects_dataset[index_min].image)
-            cv2.imshow("Object", obj.image)
-            cv2.waitKey(0)
+        #index_min = min(range(len(metrics)), key=metrics.__getitem__)
+        #obj.path = objects_dataset[index_min].path
+        #if DEBUG_OBJECTS:
+        #    cv2.destroyAllWindows()
+        #    print(objects_dataset[index_min].path, index_min, metrics)
+        #    print(obj.dominant_colors)
+        #    print(objects_dataset[index_min].dominant_colors)
+        #    cv2.imshow("Object Colors", utils.generate_colors_image(obj.dominant_colors))
+        #    cv2.imshow("Predicted Colors", utils.generate_colors_image(objects_dataset[index_min].dominant_colors))
+        #    cv2.imshow("Prediceted Object", objects_dataset[index_min].image)
+        #    cv2.imshow("Object", obj.image)
+        #    cv2.waitKey(0)
 
         #if (index_min != 0):
         rezult.append(obj)
