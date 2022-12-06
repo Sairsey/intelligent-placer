@@ -46,6 +46,7 @@ $$f2(x_1, y_1, \theta_1, x_2, y_2, ...) = \sum_{i=1}^m f1(x_i, y_i, \theta_i) + 
 Для выполнения процесса градиентного спуска использовался модуль [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html). Из всех методов, которые поддерживает данная библиотека, используются 
 - [Nelder-Mead](https://docs.scipy.org/doc/scipy/reference/optimize.minimize-neldermead.html#optimize-minimize-neldermead)
 - [BFGS](https://docs.scipy.org/doc/scipy/reference/optimize.minimize-bfgs.html#optimize-minimize-bfgs)
+
 На практике, бывали ситуации когда один из методов выдавал неправильную точку минимума, несмотря на то что функция была выпуклой. Поэтому, в случае если один из методов выдает точку, в которой значение функционала больше 0, предпренимается попытка использовать второй метод. Если же и второй метод выдаёт точку, в которой значение функционала больше 0, то возвращается False. Иначе возвращается True.
 
 ## Возможное практическое применения
