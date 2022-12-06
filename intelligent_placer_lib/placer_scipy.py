@@ -9,6 +9,9 @@ DEBUG_PLACER = False
 DEBUG_GIF = False
 DEBUG_GIF_PATH = "tmp.gif"
 DEBUG_GIF_ITERATIONS_ARRAY = []
+START_OPTIMIZATION_X = 0.1
+START_OPTIMIZATION_Y = 0.1
+START_OPTIMIZATION_PHI = 0.1
 
 def callback_for_gif(data):
     DEBUG_GIF_ITERATIONS_ARRAY.append(data)    
@@ -64,7 +67,7 @@ def place_one_object(obj, con):
     first_attempt = []
     
     # try to minimize
-    res = minimize(one_object_optimize_function, (0.1, 0.1, 0.1) , args=(obj, con), options={'gtol': 1e-7}, callback=callback_for_gif)
+    res = minimize(one_object_optimize_function, (START_OPTIMIZATION_X, START_OPTIMIZATION_Y, START_OPTIMIZATION_PHI) , args=(obj, con), options={'gtol': 1e-7}, callback=callback_for_gif)
     ans = False
     if res.fun <= 1: # because if we intersect with only 1 pixel, it is not fatal
         ans = True
@@ -87,11 +90,9 @@ def place_one_object(obj, con):
             # Create image filled with zeros the same size of original image
             x1, y1, w1, h1 = cv2.boundingRect(con)
             x2, y2, w2, h2 = cv2.boundingRect(new_contour)
-            w1 += x1
-            h1 += y1
-            w2 += x2
-            h2 += y2
-            blank = np.zeros((max(h1, h2), max(w1, w2), 3), dtype=np.uint8)
+            blank_w = max(w1 + x1, w2 + x2)
+            blank_h = max(h1 + y1, h2 + y2)
+            blank = np.zeros((blank_h, blank_w, 3), dtype=np.uint8)
 
             blank = cv2.fillPoly(blank, [con], (255, 0, 0))
             blank = cv2.fillPoly(blank, [new_contour], (0, 255, 0))
@@ -107,11 +108,9 @@ def place_one_object(obj, con):
         # Create image filled with zeros the same size of original image
         x1, y1, w1, h1 = cv2.boundingRect(con)
         x2, y2, w2, h2 = cv2.boundingRect(new_contour)
-        w1 += x1
-        h1 += y1
-        w2 += x2
-        h2 += y2
-        blank = np.zeros((max(h1, h2), max(w1, w2), 3))
+        blank_w = max(w1 + x1, w2 + x2)
+        blank_h = max(h1 + y1, h2 + y2)
+        blank = np.zeros((blank_h, blank_w, 3))
 
         blank = cv2.fillPoly(blank, [con], (255, 0, 0))
         blank = cv2.fillPoly(blank, [new_contour], (0, 255, 0))
@@ -125,9 +124,9 @@ def place_many_objects(objs, con):
     
     initial_guess = []
     for o in objs:
-        initial_guess.append(0.1) # position
-        initial_guess.append(0.1) # position
-        initial_guess.append(0.1) # rotation
+        initial_guess.append(START_OPTIMIZATION_X) # position
+        initial_guess.append(START_OPTIMIZATION_Y) # position
+        initial_guess.append(START_OPTIMIZATION_PHI) # rotation
 
     # try to minimize
     res = minimize(many_object_optimize_function, initial_guess, args=(objs, con), options={'gtol': 1e-7}, callback=callback_for_gif)
@@ -145,8 +144,8 @@ def place_many_objects(objs, con):
         frames = []
         for xk in DEBUG_GIF_ITERATIONS_ARRAY:
             x1, y1, w1, h1 = cv2.boundingRect(con)
-            w1 += x1
-            h1 += y1
+            blank_w = w1 + x1
+            blank_h = h1 + y1
         
             for i in range(len(objs)):
                 obj = objs[i]
@@ -155,13 +154,11 @@ def place_many_objects(objs, con):
 
                 # Create image filled with zeros the same size of original image
                 x2, y2, w2, h2 = cv2.boundingRect(new_contour)
-                w2 += x2
-                h2 += y2
             
-                h1 = max(h1, h2)
-                w1 = max(w1, w2)
+                blank_h = max(blank_h, h2 + y2)
+                blank_w = max(blank_w, w2 + x2)
             
-            blank = np.zeros((h1, w1, 3), dtype=np.uint8)
+            blank = np.zeros((blank_h, blank_w, 3), dtype=np.uint8)
             blank = cv2.fillPoly(blank, [con], (255, 0, 0))
             colors = [
                 [0, 0, 0.9 * 255],
@@ -185,8 +182,8 @@ def place_many_objects(objs, con):
     if (DEBUG_PLACER):
         print(ans, res)
         x1, y1, w1, h1 = cv2.boundingRect(con)
-        w1 += x1
-        h1 += y1
+        blank_w = w1 + x1
+        blank_h = h1 + y1
         
         for i in range(len(objs)):
             obj = objs[i]
@@ -194,14 +191,11 @@ def place_many_objects(objs, con):
             new_contour += [int(res[3 * i + 0]), int(res[3 * i + 1])]
 
             # Create image filled with zeros the same size of original image
-            x2, y2, w2, h2 = cv2.boundingRect(new_contour)
-            w2 += x2
-            h2 += y2
+            x2, y2, w2, h2 = cv2.boundingRect(new_contour)            
+            blank_h = max(blank_h, h2 + y2)
+            blank_w = max(blank_w, w2 + x2)
             
-            h1 = max(h1, h2)
-            w1 = max(w1, w2)
-            
-        blank = np.zeros((h1, w1, 3))
+        blank = np.zeros((blank_h, blank_w, 3))
         blank = cv2.fillPoly(blank, [con], (255, 0, 0))
         colors = [
             [0, 0, 0.9],
