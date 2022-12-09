@@ -3,3 +3,5 @@ opencv-python==4.6.0.66
 Pillow==9.2.0
 scipy==1.9.3
 Shapely==1.8.5.post1
+scikit-learn
+imageio
